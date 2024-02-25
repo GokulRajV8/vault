@@ -78,7 +78,7 @@ if not password_verified:
 
 # welcome prompt
 print(
-    "+--------------------------------+\n"
-    "| Welcome to your personal Vault |\n"
-    "+--------------------------------+\n"
+    "╔════════════════════════════════╗\n"
+    "║ Welcome to your personal Vault ║\n"
+    "╚════════════════════════════════╝\n"
 )
