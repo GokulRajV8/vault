@@ -6,16 +6,13 @@ from . import Fernet
 from . import InvalidToken
 from . import Scrypt
 
-if os.name == "nt":
-    _slash = "\\"
-else:
-    _slash = "/"
+from . import SLASH
+from . import operations
 
 # salt used in the application
 salt = b"\x18\xec7$\xd9\x85\xc87$i\xa3\xfeZ-\xd49\xe2\xb1$\x11\xc3C\xe5\xf1\xc0\xf8\x136%\xd7\xcd!"
 
-user_home = os.getenv("USERPROFILE")
-vault_dir = f"{user_home}{_slash}Vault"
+vault_dir = f"{os.getenv("USERPROFILE")}{SLASH}Vault"
 
 # checking if vault is present
 if not os.path.isdir(vault_dir):
@@ -25,10 +22,18 @@ if not os.path.isdir(vault_dir):
     )
     sys.exit(0)
 
-vault_verifier_file = f"{vault_dir}{_slash}verifier"
+vault_verifier_file = f"{vault_dir}{SLASH}verifier"
+vault_notes = list(
+    filter(
+        lambda file_name: file_name.endswith(".encnote")
+        and os.path.isfile(f"{vault_dir}{SLASH}{file_name}"),
+        os.listdir(vault_dir),
+    )
+)
 vault_files = list(
     filter(
-        lambda file_name: file_name.endswith(".enc"),
+        lambda file_name: file_name.endswith(".encfile")
+        and os.path.isfile(f"{vault_dir}{SLASH}{file_name}"),
         os.listdir(vault_dir),
     )
 )
@@ -36,7 +41,7 @@ vault_files = list(
 password_verified = False
 
 if not os.path.isfile(vault_verifier_file):
-    if len(vault_files) > 0:
+    if len(vault_notes) + len(vault_files) > 0:
         print(
             "Vault cannot be verified and is not empty, hence all data are lost forever.\n"
             "Kindly delete all data present in ~/Vault and restart me.\n"
@@ -77,8 +82,23 @@ if not password_verified:
             sys.exit(0)
 
 # welcome prompt
-print(
-    "╔════════════════════════════════╗\n"
-    "║ Welcome to your personal Vault ║\n"
-    "╚════════════════════════════════╝\n"
-)
+print("Welcome to your personal Vault !!!\nEnter ! to go back at any point\n")
+
+while True:
+    option = input("Do you want to process notes or files (n, f) : ")
+    if option == "!":
+        print("Thank you for using Vault !!!")
+        break
+    elif option in ("n", "f"):
+        menu_name = option
+        while menu_name != "":
+            if option == "n":
+                menu_name = operations.execute(
+                    menu_name, fernet=fernet, vault_dir=vault_dir, files=vault_notes
+                )
+            else:
+                menu_name = operations.execute(
+                    menu_name, fernet=fernet, vault_dir=vault_dir, files=vault_files
+                )
+    else:
+        print("Invalid option")

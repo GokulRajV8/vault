@@ -2,6 +2,7 @@
 A program to encrypt and decrypt data stored in vaults
 """
 
+import os
 import sys
 
 try:
@@ -14,3 +15,8 @@ except ImportError:
         "Kindly run `pip install cryptography` before starting me.\n"
     )
     sys.exit(0)
+
+if os.name == "nt":
+    SLASH = "\\"
+else:
+    SLASH = "/"
