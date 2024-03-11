@@ -49,27 +49,37 @@ if not os.path.isfile(vault_verifier_file):
         sys.exit(0)
     else:
         print("Vault is empty, initializing new vault ...")
-        kdf = Scrypt(salt=salt, length=32, n=2**14, r=8, p=1)
+        kdf = Scrypt(salt=salt, length=32, n=2**16, r=8, p=1)
 
         password = input("Enter the password for vault : ")
         fernet = Fernet(base64.urlsafe_b64encode(kdf.derive(password.encode())))
 
         with open(vault_verifier_file, "wb") as verifier_file:
-            verifier_file.write(fernet.encrypt("success".encode()))
+            verifier_file.write(
+                base64.urlsafe_b64decode(
+                    fernet.encrypt(
+                        "success".encode()
+                    )
+                )
+            )
         print("Vault initialization completed.\n")
 
         # no need to take password again
         password_verified = True
 
 if not password_verified:
-    kdf = Scrypt(salt=salt, length=32, n=2**14, r=8, p=1)
+    kdf = Scrypt(salt=salt, length=32, n=2**16, r=8, p=1)
 
     password = input("Enter the password for vault : ")
     fernet = Fernet(base64.urlsafe_b64encode(kdf.derive(password.encode())))
 
     with open(vault_verifier_file, "rb") as verifier_file:
         try:
-            verifier_file_decrypted = fernet.decrypt(verifier_file.read()).decode()
+            verifier_file_decrypted = fernet.decrypt(
+                base64.urlsafe_b64encode(
+                    verifier_file.read()
+                )
+            ).decode()
             if verifier_file_decrypted == "success":
                 print("Password verified successfully.\n")
             else:
