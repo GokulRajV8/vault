@@ -188,6 +188,9 @@ def menu_fr(fernet: Fernet, vault_dir: str, files: list[str]) -> str:
 
     if file_name_enc in files:
         dest_dir_name = input(Messages.ENTER_DIRECTORY_NAME)
+        if dest_dir_name == "!":
+            return "f"
+
         if os.path.isdir(dest_dir_name):
             dest_file = f"{dest_dir_name}{Constants.SLASH}{file_name}"
 
