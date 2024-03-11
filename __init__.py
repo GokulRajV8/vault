@@ -5,8 +5,6 @@ A program to encrypt and decrypt data stored in vaults
 import os
 import sys
 
-from collections import namedtuple
-
 try:
     from cryptography.fernet import Fernet
     from cryptography.fernet import InvalidToken
