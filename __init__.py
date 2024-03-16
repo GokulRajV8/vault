@@ -25,8 +25,10 @@ class Constants:
 
     if os.name == "nt":
         SLASH = "\\"
+        CLEAR_COMMAND = "cls"
     else:
         SLASH = "/"
+        CLEAR_COMMAND = "clear"
 
 
 class Messages:
@@ -35,7 +37,6 @@ class Messages:
     INITIALIZING_VAULT = "Vault is empty, initializing new vault ..."
     ENTER_PASSWORD = "Enter the password for vault : "
     VAULT_INITIALIZED = "Vault initialization completed"
-    PASSWORD_VERIFICATION_SUCCESS = "Password verified successfully"
     PASSWORD_VERIFICATION_FAILURE = "Password verification failed"
     WELCOME = "Welcome to your personal Vault !!!\nEnter ! to go back at any point"
     NOTES_OR_FILES = "Do you want to process notes or files (n, f) : "

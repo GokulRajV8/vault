@@ -74,7 +74,9 @@ if not password_verified:
                 )
             ).decode()
             if verifier_file_decrypted == "success":
-                print(Messages.PASSWORD_VERIFICATION_SUCCESS)
+
+                # clearing screen to prevent password peeping
+                os.system(Constants.CLEAR_COMMAND)
             else:
                 raise InvalidToken
         except InvalidToken:
