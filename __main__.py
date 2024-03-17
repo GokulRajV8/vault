@@ -9,34 +9,34 @@ from . import Scrypt
 from . import Constants
 from . import Messages
 
+from . import database
 from . import operations
 
-vault_dir = f"{os.getenv("USERPROFILE")}{Constants.SLASH}Vault"
+VAULT_DIR = f"{os.getenv("USERPROFILE")}{Constants.SLASH}Vault"
 
 # checking if vault is present
-if not os.path.isdir(vault_dir):
+if not os.path.isdir(VAULT_DIR):
     print(Messages.VAULT_NOT_PRESENT)
     sys.exit(0)
 
-vault_verifier_file = f"{vault_dir}{Constants.SLASH}verifier"
 vault_notes = list(
     filter(
         lambda file_name: file_name.endswith(Constants.FILE_FORMAT_NOTE)
-        and os.path.isfile(f"{vault_dir}{Constants.SLASH}{file_name}"),
-        os.listdir(vault_dir),
+        and os.path.isfile(f"{VAULT_DIR}{Constants.SLASH}{file_name}"),
+        os.listdir(VAULT_DIR),
     )
 )
 vault_files = list(
     filter(
         lambda file_name: file_name.endswith(Constants.FILE_FORMAT_FILE)
-        and os.path.isfile(f"{vault_dir}{Constants.SLASH}{file_name}"),
-        os.listdir(vault_dir),
+        and os.path.isfile(f"{VAULT_DIR}{Constants.SLASH}{file_name}"),
+        os.listdir(VAULT_DIR),
     )
 )
 
 password_verified = False
 
-if not os.path.isfile(vault_verifier_file):
+if not os.path.isfile(database.DB_FILE):
     if len(vault_notes) + len(vault_files) > 0:
         print(Messages.VAULT_NOT_EMPTY)
         sys.exit(0)
@@ -47,14 +47,7 @@ if not os.path.isfile(vault_verifier_file):
         password = input(Messages.ENTER_PASSWORD)
         fernet = Fernet(base64.urlsafe_b64encode(kdf.derive(password.encode())))
 
-        with open(vault_verifier_file, "wb") as verifier_file:
-            verifier_file.write(
-                base64.urlsafe_b64decode(
-                    fernet.encrypt(
-                        "success".encode()
-                    )
-                )
-            )
+        database.create_db(fernet.encrypt("success".encode()).decode())
         print(Messages.VAULT_INITIALIZED)
 
         # no need to take password again
@@ -66,20 +59,22 @@ if not password_verified:
     password = input(Messages.ENTER_PASSWORD)
     fernet = Fernet(base64.urlsafe_b64encode(kdf.derive(password.encode())))
 
-    with open(vault_verifier_file, "rb") as verifier_file:
-        try:
-            verifier_file_decrypted = fernet.decrypt(
-                base64.urlsafe_b64encode(
-                    verifier_file.read()
-                )
-            ).decode()
-            if verifier_file_decrypted == "success":
-                print(Messages.PASSWORD_VERIFICATION_SUCCESS)
-            else:
-                raise InvalidToken
-        except InvalidToken:
-            print(Messages.PASSWORD_VERIFICATION_FAILURE)
-            sys.exit(0)
+    if not database.verify_db():
+        print(Messages.VAULT_NOT_EMPTY)
+        sys.exit(0)
+
+    try:
+        verifier_file_decrypted = fernet.decrypt(
+            database.get_verifier_string().encode()
+        ).decode()
+        if verifier_file_decrypted == "success":
+            print(Messages.PASSWORD_VERIFICATION_SUCCESS)
+        else:
+            raise InvalidToken
+
+    except InvalidToken:
+        print(Messages.PASSWORD_VERIFICATION_FAILURE)
+        sys.exit(0)
 
 # welcome prompt
 print(Messages.WELCOME)
@@ -94,11 +89,11 @@ while True:
         while menu_name != "":
             if option == "n":
                 menu_name = operations.execute(
-                    menu_name, fernet=fernet, vault_dir=vault_dir, files=vault_notes
+                    menu_name, fernet=fernet, vault_dir=VAULT_DIR, files=vault_notes
                 )
             else:
                 menu_name = operations.execute(
-                    menu_name, fernet=fernet, vault_dir=vault_dir, files=vault_files
+                    menu_name, fernet=fernet, vault_dir=VAULT_DIR, files=vault_files
                 )
     else:
         print(Messages.INVALID_OPTION)
