@@ -71,9 +71,28 @@ def get_verifier_string() -> str:
         if result is not None:
             verifier_string = result[0]
     except sqlite3.Error:
-        verifier_string = ""
+        pass
     finally:
         if conn:
             conn.close()
 
     return verifier_string
+
+def get_all_file_entries(type: str) -> list[str]:
+    output = []
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        cur = conn.cursor()
+
+        cur.execute(queries.GET_ALL_FILE_ENTRIES, (type,))
+
+        for entry in cur.fetchall():
+            output.append(entry[0])
+
+    except sqlite3.Error:
+        pass
+    finally:
+        if conn:
+            conn.close()
+
+    return output

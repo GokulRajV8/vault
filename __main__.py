@@ -19,20 +19,8 @@ if not os.path.isdir(VAULT_DIR):
     print(Messages.VAULT_NOT_PRESENT)
     sys.exit(0)
 
-vault_notes = list(
-    filter(
-        lambda file_name: file_name.endswith(Constants.FILE_FORMAT_NOTE)
-        and os.path.isfile(f"{VAULT_DIR}{Constants.SLASH}{file_name}"),
-        os.listdir(VAULT_DIR),
-    )
-)
-vault_files = list(
-    filter(
-        lambda file_name: file_name.endswith(Constants.FILE_FORMAT_FILE)
-        and os.path.isfile(f"{VAULT_DIR}{Constants.SLASH}{file_name}"),
-        os.listdir(VAULT_DIR),
-    )
-)
+vault_notes = database.get_all_file_entries("note")
+vault_files = database.get_all_file_entries("file")
 
 password_verified = False
 

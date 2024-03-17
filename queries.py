@@ -29,3 +29,5 @@ INSERT_INTO_CONSTANTS = "INSERT INTO constants(name, value) VALUES(?, ?)"
 GET_TABLES_INFO = "SELECT sql FROM sqlite_master WHERE name = ?"
 
 GET_CONSTANT = "SELECT value FROM constants WHERE name = ?"
+
+GET_ALL_FILE_ENTRIES = "SELECT file_name FROM file_data WHERE file_type = ? ORDER BY id"
