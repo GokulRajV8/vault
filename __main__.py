@@ -40,34 +40,32 @@ if not os.path.isfile(database.DB_FILE):
     if len(vault_notes) + len(vault_files) > 0:
         print(Messages.VAULT_NOT_EMPTY)
         sys.exit(0)
-    else:
-        print(Messages.INITIALIZING_VAULT)
-        kdf = Scrypt(salt=Constants.SALT, length=32, n=2**16, r=8, p=1)
 
-        password = input(Messages.ENTER_PASSWORD)
-        fernet = Fernet(base64.urlsafe_b64encode(kdf.derive(password.encode())))
-
-        database.create_db(fernet.encrypt("success".encode()).decode())
-        print(Messages.VAULT_INITIALIZED)
-
-        # no need to take password again
-        password_verified = True
-
-if not password_verified:
+    print(Messages.INITIALIZING_VAULT)
     kdf = Scrypt(salt=Constants.SALT, length=32, n=2**16, r=8, p=1)
-
     password = input(Messages.ENTER_PASSWORD)
     fernet = Fernet(base64.urlsafe_b64encode(kdf.derive(password.encode())))
 
+    database.create_db(fernet.encrypt("success".encode()).decode())
+    print(Messages.VAULT_INITIALIZED)
+
+    # no need to take password again
+    password_verified = True
+
+if not password_verified:
     if not database.verify_db():
         print(Messages.VAULT_NOT_EMPTY)
         sys.exit(0)
 
+    kdf = Scrypt(salt=Constants.SALT, length=32, n=2**16, r=8, p=1)
+    password = input(Messages.ENTER_PASSWORD)
+    fernet = Fernet(base64.urlsafe_b64encode(kdf.derive(password.encode())))
+
     try:
-        verifier_file_decrypted = fernet.decrypt(
+        verifier_string_decrypted = fernet.decrypt(
             database.get_verifier_string().encode()
         ).decode()
-        if verifier_file_decrypted == "success":
+        if verifier_string_decrypted == "success":
             print(Messages.PASSWORD_VERIFICATION_SUCCESS)
         else:
             raise InvalidToken
